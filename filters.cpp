@@ -18,17 +18,20 @@ using namespace std;
 
 vector<ppm> threadsImageDivision(ppm &img, int threads)
 {
-    int pixelsPerThread = img.size / threads;
     int threadWidth = img.width / threads;
     int restPixel = img.size % threads;
     vector<ppm> vecImages;
 
-    for (int thread; thread < threads; thread++)
+    for (int threadIndex = 0; threadIndex < threads; threadIndex++)
     {
         ppm threadImage(threadWidth, img.height);
 
-        int initialPosX = threadWidth * thread;
-        for (int y; y < img.height; y++)
+        int initialPosX = threadWidth * threadIndex;
+        
+        // Si estamos trabajando con el último hilo, entonces a su procesamiento le sumamos el trozo sobrante de la división del ancho de la imagen.
+        // threadWidth = (threadIndex == threads - 1) ? threadWidth + restPixel : threadWidth;
+
+        for (int y = 0; y < img.height; y++)
         {
             for (int x = initialPosX; x < initialPosX + threadWidth, x < threadWidth; x++)
             {
@@ -51,17 +54,6 @@ ppm plain(map<string, VariantArg> &argsMap)
 
     return img;
 }
-
-// ppm applyFilterThreadPlain(ppm imgThread, ppm img, int numThreads, int threadNumber) {
-//     // solo faltaria hacer esto para cada filtro que :) VAMOS AL CHAT
-//     sharpen(imgThread);
-//     int threadWidth = img.width/numThreads;
-//     for(int i; i < img.height; i++) {
-//         for(int j; j < img.width; j++) {
-//             img.setPixel(i, j+threadNumber*threadWidth, imgThread.getPixel(i, j));
-//         }
-//     }
-// }
 
 ppm blackWhite(map<string, VariantArg> &argsMap)
 {
@@ -269,10 +261,19 @@ ppm sharpen(map<string, VariantArg> &argsMap)
     return img;
 }
 
-// ppm applyFilter(char *argv[])
-// {
-//     cout << filterName;
-//     function<ppm(map<string, VariantArg>&)> chosenFilter = functionMap[filterName];
-
-    
-// }
+void applyFilterPerThread(function<ppm(map<string, VariantArg> &)> chosenFilter, map<string, VariantArg> &argsMap, ppm &imgGlobal, int threadIndex)
+{
+    ppm imgResult = chosenFilter(argsMap);
+    cout << "Nro de hilo que pasó: " << threadIndex << endl;
+    //out/cebra
+    string nombreArchivo = "out/" + to_string(threadIndex) + "cebra.ppm";
+    imgResult.write(nombreArchivo);
+    for (int y = 0; y < imgResult.height; y++)
+    {
+        for (int x = 0; x < imgResult.width; x++)
+        {
+            //cout << "Entro al segundo IF";
+            imgGlobal.setPixel(y, x + threadIndex * imgResult.width, imgResult.getPixel(x, y));
+        }
+    }
+}

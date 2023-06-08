@@ -9,6 +9,7 @@
 #include <variant>
 #include <map>
 #include "ppm.h"
+#include <functional>
 
 // DECLARACIÓN DEL TIPO DE DATO ARGUMENTO VARIANTE QUE RECIBIRÁ CADA KEY DEL MAPA DE LOS FILTROS
 
@@ -39,9 +40,7 @@ ppm edgeDetection(map<string, VariantArg> &argsMap); // IMPLEMENTADO
 ppm sharpen(map<string, VariantArg> &argsMap);       // IMPLEMENTADO
 
 // FILTROS MULTI-THREAD
-
-// void applyFilter(char *argv[]);
-// void applyFilterMultiThread();
+void applyFilterPerThread(function<ppm(map<string, VariantArg> &)> chosenFilter, map<string, VariantArg> &argsMap, ppm &imgGlobal, int threadIndex); 
 vector<ppm> threadsImageDivision(ppm &img, int threads);
 
 #endif

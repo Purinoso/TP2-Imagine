@@ -12,7 +12,7 @@ clean:
 	rm -f $(BIN) $(OBJ)
 
 main: main.o filters.o ppm.o
-	g++ -pthread -o $@ $^
+	g++ -g -Og -pthread -o $@ $^
 
 %.o: %.cpp
-	g++ -pthread -c -o $@ $<
+	g++ -g -Og -pthread -c -o $@ $<
