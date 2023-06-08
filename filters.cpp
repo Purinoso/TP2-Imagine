@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdio.h>
 #include <string>
 #include <stdlib.h>
 #include <math.h>
@@ -19,26 +20,33 @@ using namespace std;
 vector<ppm> threadsImageDivision(ppm &img, int threads)
 {
     int threadWidth = img.width / threads;
-    int restPixel = img.size % threads;
+    int restPixel = img.width % threads;
+
     vector<ppm> vecImages;
+
+    int initialPosX = restPixel == 0 ? 0 : -1 - threadWidth;
 
     for (int threadIndex = 0; threadIndex < threads; threadIndex++)
     {
-        ppm threadImage(threadWidth, img.height);
+        int currentThreadWidth = threadWidth;
 
-        int initialPosX = threadWidth * threadIndex;
-        
-        // Si estamos trabajando con el último hilo, entonces a su procesamiento le sumamos el trozo sobrante de la división del ancho de la imagen.
-        // threadWidth = (threadIndex == threads - 1) ? threadWidth + restPixel : threadWidth;
-
-        for (int y = 0; y < img.height; y++)
+        if (restPixel > 0)
         {
-            for (int x = initialPosX; x < initialPosX + threadWidth, x < threadWidth; x++)
+            currentThreadWidth++;
+            restPixel--;
+        }
+
+        initialPosX += currentThreadWidth;
+
+        ppm threadImage(currentThreadWidth, img.height);
+
+        for (unsigned int y = 0; y < img.height; y++)
+        {
+            for (int x = initialPosX; x < initialPosX + currentThreadWidth; x++)
             {
                 threadImage.setPixel(y, x - initialPosX, img.getPixel(y, x));
             }
         }
-        vecImages.push_back(threadImage);
     }
     return vecImages;
 }
@@ -48,8 +56,8 @@ ppm plain(map<string, VariantArg> &argsMap)
     ppm img = *get_if<ppm>(&argsMap.at("img1"));
     float c = *get_if<float>(&argsMap.at("p1"));
 
-    for (int i = 0; i < img.height; i++)
-        for (int j = 0; j < img.width; j++)
+    for (unsigned int i = 0; i < img.height; i++)
+        for (unsigned int j = 0; j < img.width; j++)
             img.setPixel(i, j, pixel(c, c, c));
 
     return img;
@@ -59,9 +67,9 @@ ppm blackWhite(map<string, VariantArg> &argsMap)
 {
     ppm img = *get_if<ppm>(&argsMap.at("img1"));
 
-    for (int i = 0; i < img.height; i++)
+    for (unsigned int i = 0; i < img.height; i++)
     {
-        for (int j = 0; j < img.width; j++)
+        for (unsigned int j = 0; j < img.width; j++)
         {
             pixel p = img.getPixel(i, j);
             int g = (p.r + p.g + p.b) / 3;
@@ -79,9 +87,9 @@ ppm contrast(map<string, VariantArg> &argsMap)
     float contrast = *get_if<float>(&argsMap.at("p1"));
 
     float c = (259.f * (contrast + 255.f)) / (255.f * (259.f - contrast));
-    for (int i = 0; i < img.height; i++)
+    for (unsigned int i = 0; i < img.height; i++)
     {
-        for (int j = 0; j < img.width; j++)
+        for (unsigned int j = 0; j < img.width; j++)
         {
             pixel p = img.getPixel(i, j);
             int r = c * (p.r - 128) + 128;
@@ -100,9 +108,9 @@ ppm brightness(map<string, VariantArg> &argsMap)
     ppm img = *get_if<ppm>(&argsMap.at("img1"));
     float b = *get_if<float>(&argsMap.at("p1"));
 
-    for (int i = 0; i < img.height; i++)
+    for (unsigned int i = 0; i < img.height; i++)
     {
-        for (int j = 0; j < img.width; j++)
+        for (unsigned int j = 0; j < img.width; j++)
         {
             pixel p = img.getPixel(i, j);
             int nr = p.r + 255 * b;
@@ -121,9 +129,9 @@ ppm shades(map<string, VariantArg> &argsMap)
     ppm img = *get_if<ppm>(&argsMap.at("img1"));
     unsigned char shades = *get_if<float>(&argsMap.at("p1"));
 
-    for (int i = 0; i < img.height; i++)
+    for (unsigned int i = 0; i < img.height; i++)
     {
-        for (int j = 0; j < img.width; j++)
+        for (unsigned int j = 0; j < img.width; j++)
         {
             pixel p = img.getPixel(i, j);
             int range = 255 / (shades - 1);
@@ -143,9 +151,9 @@ ppm mergeFilter(map<string, VariantArg> &argsMap)
     ppm img2 = *get_if<ppm>(&argsMap.at("img2"));
     float p1 = *get_if<float>(&argsMap.at("p1"));
 
-    for (int i = 0; i < img1.height; i++)
+    for (unsigned int i = 0; i < img1.height; i++)
     {
-        for (int j = 0; j < img1.width; j++)
+        for (unsigned int j = 0; j < img1.width; j++)
         {
             pixel pixel1 = img1.getPixel(i, j);
             pixel pixel2 = img2.getPixel(i, j);
@@ -165,9 +173,9 @@ ppm boxBlur(map<string, VariantArg> &argsMap)
     ppm img = *get_if<ppm>(&argsMap.at("img1"));
 
     float kernel[] = {1.0 / 9, 1.0 / 9, 1.0 / 9, 1.0 / 9, 1.0 / 9, 1.0 / 9, 1.0 / 9, 1.0 / 9, 1.0 / 9};
-    for (int i = 1; i < img.height - 1; i++)
+    for (unsigned int i = 1; i < img.height - 1; i++)
     {
-        for (int j = 1; j < img.width - 1; j++)
+        for (unsigned int j = 1; j < img.width - 1; j++)
         {
             pixel np;
             pixel pixels[] = {
@@ -198,9 +206,9 @@ ppm edgeDetection(map<string, VariantArg> &argsMap)
 
     int kernel[] = {1, 0, -1, 2, 0, -2, 1, 0, -1};
     int kernel_t[] = {1, 2, 1, 0, 0, 0, -1, -2, -1};
-    for (int i = 1; i < img.height - 1; i++)
+    for (unsigned int i = 1; i < img.height - 1; i++)
     {
-        for (int j = 1; j < img.width - 1; j++)
+        for (unsigned int j = 1; j < img.width - 1; j++)
         {
             pixel np;
             pixel temp;
@@ -239,9 +247,9 @@ ppm sharpen(map<string, VariantArg> &argsMap)
     ppm img = *get_if<ppm>(&argsMap["img1"]);
 
     int kernel[] = {0, -1, 0, -1, 5, -1, 0, -1, 0};
-    for (int i = 1; i < img.height - 1; i++)
+    for (unsigned int i = 1; i < img.height - 1; i++)
     {
-        for (int j = 1; j < img.width - 1; j++)
+        for (unsigned int j = 1; j < img.width - 1; j++)
         {
             pixel np;
             pixel pixels[] = {
@@ -264,16 +272,12 @@ ppm sharpen(map<string, VariantArg> &argsMap)
 void applyFilterPerThread(function<ppm(map<string, VariantArg> &)> chosenFilter, map<string, VariantArg> &argsMap, ppm &imgGlobal, int threadIndex)
 {
     ppm imgResult = chosenFilter(argsMap);
-    cout << "Nro de hilo que pasó: " << threadIndex << endl;
-    //out/cebra
-    string nombreArchivo = "out/" + to_string(threadIndex) + "cebra.ppm";
-    imgResult.write(nombreArchivo);
-    for (int y = 0; y < imgResult.height; y++)
+
+    for (unsigned int y = 0; y < imgResult.height; y++)
     {
-        for (int x = 0; x < imgResult.width; x++)
+        for (unsigned int x = 0; x < imgResult.width; x++)
         {
-            //cout << "Entro al segundo IF";
-            imgGlobal.setPixel(y, x + threadIndex * imgResult.width, imgResult.getPixel(x, y));
+            imgGlobal.setPixel(y, x + imgResult.width * threadIndex, imgResult.getPixel(y, x));
         }
     }
 }
