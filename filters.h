@@ -40,7 +40,7 @@ ppm edgeDetection(map<string, VariantArg> &argsMap); // IMPLEMENTADO
 ppm sharpen(map<string, VariantArg> &argsMap);       // IMPLEMENTADO
 
 // FILTROS MULTI-THREAD
-void applyFilterPerThread(function<ppm(map<string, VariantArg> &)> chosenFilter, map<string, VariantArg> &argsMap, ppm &imgGlobal, int threadIndex); 
+void applyFilterPerThread(function<ppm(map<string, VariantArg> &)> chosenFilter, map<string, VariantArg> &argsMap, ppm &imgGlobal, int initialPosX); 
 vector<ppm> threadsImageDivision(ppm &img, int threads);
 
 #endif

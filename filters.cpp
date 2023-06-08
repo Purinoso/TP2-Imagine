@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <vector>
-#include "ppm.h"
 #include <thread>
 #include <atomic>
 #include <cmath>
@@ -48,6 +47,7 @@ vector<ppm> threadsImageDivision(ppm &img, int threads)
             }
         }
     }
+
     return vecImages;
 }
 
@@ -269,7 +269,7 @@ ppm sharpen(map<string, VariantArg> &argsMap)
     return img;
 }
 
-void applyFilterPerThread(function<ppm(map<string, VariantArg> &)> chosenFilter, map<string, VariantArg> &argsMap, ppm &imgGlobal, int threadIndex)
+void applyFilterPerThread(function<ppm(map<string, VariantArg> &)> chosenFilter, map<string, VariantArg> &argsMap, ppm &imgGlobal, int initialPosX)
 {
     ppm imgResult = chosenFilter(argsMap);
 
@@ -277,7 +277,7 @@ void applyFilterPerThread(function<ppm(map<string, VariantArg> &)> chosenFilter,
     {
         for (unsigned int x = 0; x < imgResult.width; x++)
         {
-            imgGlobal.setPixel(y, x + imgResult.width * threadIndex, imgResult.getPixel(y, x));
+            imgGlobal.setPixel(y, x + initialPosX, imgResult.getPixel(y, x));
         }
     }
 }
