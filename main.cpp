@@ -78,12 +78,14 @@ int main(int argc, char *argv[])
         }
 
         vector<ppm> imgs1PerThread = threadsImageDivision(img1, nthreads);
-        
+        cout << imgs1PerThread.size();
+
         unsigned int resPixel = img1.width % nthreads;
         int threadWidth = img1.width / nthreads;
 
         for (unsigned int threadIndex = 0; threadIndex < nthreads; threadIndex++)
         {
+            cout << " hdfasfsadsd" << endl;
             argsMaps[threadIndex]["p1"] = p1;
             argsMaps[threadIndex]["img1"] = imgs1PerThread[threadIndex];
             

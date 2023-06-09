@@ -39,13 +39,15 @@ vector<ppm> threadsImageDivision(ppm &img, int threads)
 
         ppm threadImage(currentThreadWidth, img.height);
 
-        for (unsigned int y = 0; y < img.height; y++)
+        for (int y = 0; y < img.height; y++)
         {
             for (int x = initialPosX; x < initialPosX + currentThreadWidth; x++)
             {
                 threadImage.setPixel(y, x - initialPosX, img.getPixel(y, x));
             }
         }
+
+        vecImages.push_back(threadImage);
     }
 
     return vecImages;
@@ -56,8 +58,8 @@ ppm plain(map<string, VariantArg> &argsMap)
     ppm img = *get_if<ppm>(&argsMap.at("img1"));
     float c = *get_if<float>(&argsMap.at("p1"));
 
-    for (unsigned int i = 0; i < img.height; i++)
-        for (unsigned int j = 0; j < img.width; j++)
+    for (int i = 0; i < img.height; i++)
+        for (int j = 0; j < img.width; j++)
             img.setPixel(i, j, pixel(c, c, c));
 
     return img;
@@ -67,9 +69,9 @@ ppm blackWhite(map<string, VariantArg> &argsMap)
 {
     ppm img = *get_if<ppm>(&argsMap.at("img1"));
 
-    for (unsigned int i = 0; i < img.height; i++)
+    for (int i = 0; i < img.height; i++)
     {
-        for (unsigned int j = 0; j < img.width; j++)
+        for (int j = 0; j < img.width; j++)
         {
             pixel p = img.getPixel(i, j);
             int g = (p.r + p.g + p.b) / 3;
@@ -87,9 +89,9 @@ ppm contrast(map<string, VariantArg> &argsMap)
     float contrast = *get_if<float>(&argsMap.at("p1"));
 
     float c = (259.f * (contrast + 255.f)) / (255.f * (259.f - contrast));
-    for (unsigned int i = 0; i < img.height; i++)
+    for (int i = 0; i < img.height; i++)
     {
-        for (unsigned int j = 0; j < img.width; j++)
+        for (int j = 0; j < img.width; j++)
         {
             pixel p = img.getPixel(i, j);
             int r = c * (p.r - 128) + 128;
@@ -108,9 +110,9 @@ ppm brightness(map<string, VariantArg> &argsMap)
     ppm img = *get_if<ppm>(&argsMap.at("img1"));
     float b = *get_if<float>(&argsMap.at("p1"));
 
-    for (unsigned int i = 0; i < img.height; i++)
+    for (int i = 0; i < img.height; i++)
     {
-        for (unsigned int j = 0; j < img.width; j++)
+        for (int j = 0; j < img.width; j++)
         {
             pixel p = img.getPixel(i, j);
             int nr = p.r + 255 * b;
@@ -129,9 +131,9 @@ ppm shades(map<string, VariantArg> &argsMap)
     ppm img = *get_if<ppm>(&argsMap.at("img1"));
     unsigned char shades = *get_if<float>(&argsMap.at("p1"));
 
-    for (unsigned int i = 0; i < img.height; i++)
+    for (int i = 0; i < img.height; i++)
     {
-        for (unsigned int j = 0; j < img.width; j++)
+        for (int j = 0; j < img.width; j++)
         {
             pixel p = img.getPixel(i, j);
             int range = 255 / (shades - 1);
@@ -151,9 +153,9 @@ ppm mergeFilter(map<string, VariantArg> &argsMap)
     ppm img2 = *get_if<ppm>(&argsMap.at("img2"));
     float p1 = *get_if<float>(&argsMap.at("p1"));
 
-    for (unsigned int i = 0; i < img1.height; i++)
+    for (int i = 0; i < img1.height; i++)
     {
-        for (unsigned int j = 0; j < img1.width; j++)
+        for (int j = 0; j < img1.width; j++)
         {
             pixel pixel1 = img1.getPixel(i, j);
             pixel pixel2 = img2.getPixel(i, j);
@@ -173,9 +175,9 @@ ppm boxBlur(map<string, VariantArg> &argsMap)
     ppm img = *get_if<ppm>(&argsMap.at("img1"));
 
     float kernel[] = {1.0 / 9, 1.0 / 9, 1.0 / 9, 1.0 / 9, 1.0 / 9, 1.0 / 9, 1.0 / 9, 1.0 / 9, 1.0 / 9};
-    for (unsigned int i = 1; i < img.height - 1; i++)
+    for (int i = 1; i < img.height - 1; i++)
     {
-        for (unsigned int j = 1; j < img.width - 1; j++)
+        for (int j = 1; j < img.width - 1; j++)
         {
             pixel np;
             pixel pixels[] = {
@@ -183,7 +185,7 @@ ppm boxBlur(map<string, VariantArg> &argsMap)
                 img.getPixel(i, j - 1), img.getPixel(i, j), img.getPixel(i, j + 1),
                 img.getPixel(i + 1, j - 1), img.getPixel(i + 1, j), img.getPixel(i + 1, j + 1)};
 
-            for (int k = 0; k < 9; k++)
+            for (int k = 0; k < 9; k++)             
             {
                 pixels[k].mult(kernel[k]);
                 np.addp(pixels[k]);
@@ -206,9 +208,9 @@ ppm edgeDetection(map<string, VariantArg> &argsMap)
 
     int kernel[] = {1, 0, -1, 2, 0, -2, 1, 0, -1};
     int kernel_t[] = {1, 2, 1, 0, 0, 0, -1, -2, -1};
-    for (unsigned int i = 1; i < img.height - 1; i++)
+    for (int i = 1; i < img.height - 1; i++)
     {
-        for (unsigned int j = 1; j < img.width - 1; j++)
+        for (int j = 1; j < img.width - 1; j++)
         {
             pixel np;
             pixel temp;
@@ -247,9 +249,9 @@ ppm sharpen(map<string, VariantArg> &argsMap)
     ppm img = *get_if<ppm>(&argsMap["img1"]);
 
     int kernel[] = {0, -1, 0, -1, 5, -1, 0, -1, 0};
-    for (unsigned int i = 1; i < img.height - 1; i++)
+    for (int i = 1; i < img.height - 1; i++)
     {
-        for (unsigned int j = 1; j < img.width - 1; j++)
+        for (int j = 1; j < img.width - 1; j++)
         {
             pixel np;
             pixel pixels[] = {
@@ -273,9 +275,9 @@ void applyFilterPerThread(function<ppm(map<string, VariantArg> &)> chosenFilter,
 {
     ppm imgResult = chosenFilter(argsMap);
 
-    for (unsigned int y = 0; y < imgResult.height; y++)
+    for (int y = 0; y < imgResult.height; y++)
     {
-        for (unsigned int x = 0; x < imgResult.width; x++)
+        for (int x = 0; x < imgResult.width; x++)
         {
             imgGlobal.setPixel(y, x + initialPosX, imgResult.getPixel(y, x));
         }
